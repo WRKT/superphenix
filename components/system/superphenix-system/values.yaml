@@ -478,7 +478,7 @@ apps:
               solvers:
               - http01:
                   ingress:
-                    class: traefik
+                    ingressClassName: traefik
         - |
           apiVersion: cert-manager.io/v1
           kind: ClusterIssuer
