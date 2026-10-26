@@ -477,8 +477,7 @@ apps:
               # Enable the HTTP-01 challenge provider
               solvers:
               - http01:
-                  ingress:
-                    ingressClassName: traefik
+                  ingress: {}
         - |
           apiVersion: cert-manager.io/v1
           kind: ClusterIssuer
