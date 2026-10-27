@@ -2966,63 +2966,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/{orgId}/{projectId}/load-balancer/vip-available": {
-            "get": {
-                "description": "Check that a VIP is not used by another LoadBalancer in the VPC of a subnet",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "v1",
-                    "LoadBalancer"
-                ],
-                "summary": "Check a LoadBalancer VIP",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Organization ID",
-                        "name": "orgId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Project ID",
-                        "name": "projectId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "VIP",
-                        "name": "vip",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Subnet Effective ID",
-                        "name": "subnetEId",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "VIP availability",
-                        "schema": {
-                            "$ref": "#/definitions/kubeovn.vipAvailability"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request"
-                    },
-                    "500": {
-                        "description": "Internal Server Error"
-                    }
-                }
-            }
-        },
         "/{orgId}/{projectId}/load-balancer/{effectiveId}": {
             "get": {
                 "description": "Get LoadBalancer by effective ID",
@@ -5550,14 +5493,6 @@ const docTemplate = `{
                         "Minute",
                         "Hour"
                     ]
-                }
-            }
-        },
-        "kubeovn.vipAvailability": {
-            "type": "object",
-            "properties": {
-                "available": {
-                    "type": "boolean"
                 }
             }
         },
