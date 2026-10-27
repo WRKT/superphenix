@@ -18,20 +18,18 @@ type Port struct {
 	Protocol   string `json:"protocol"`
 }
 
-// buildSpec validates the request fields and returns the rule spec with its parsed selector.
-func buildSpec(vip, namespace string, selectors, endpoints []string, ports []Port) (v1.SwitchLBRuleSpec, map[string]string, error) {
+// buildSpec validates the request fields and returns the rule spec.
+func buildSpec(vip, namespace string, selectors, endpoints []string, ports []Port) (v1.SwitchLBRuleSpec, error) {
 	if err := checkVIP(vip); err != nil {
-		return v1.SwitchLBRuleSpec{}, nil, err
+		return v1.SwitchLBRuleSpec{}, err
 	}
 
 	spec := v1.SwitchLBRuleSpec{Vip: vip, Namespace: namespace}
-	var selector map[string]string
 
 	if len(selectors) > 0 {
-		var err error
-		selector, err = utils.ParseLabels(selectors, "")
+		selector, err := utils.ParseLabels(selectors, "")
 		if err != nil {
-			return v1.SwitchLBRuleSpec{}, nil, apierrors.NewBadRequest(fmt.Sprintf("invalid selectors: %v", err))
+			return v1.SwitchLBRuleSpec{}, apierrors.NewBadRequest(fmt.Sprintf("invalid selectors: %v", err))
 		}
 		for key, value := range selector {
 			spec.Selector = append(spec.Selector, fmt.Sprintf("%s:%s", key, value))
@@ -39,7 +37,7 @@ func buildSpec(vip, namespace string, selectors, endpoints []string, ports []Por
 	} else {
 		for _, endpoint := range endpoints {
 			if net.ParseIP(endpoint).To4() == nil {
-				return v1.SwitchLBRuleSpec{}, nil, apierrors.NewBadRequest(fmt.Sprintf("endpoint %q is not a valid IPv4 address", endpoint))
+				return v1.SwitchLBRuleSpec{}, apierrors.NewBadRequest(fmt.Sprintf("endpoint %q is not a valid IPv4 address", endpoint))
 			}
 			spec.Endpoints = append(spec.Endpoints, endpoint)
 		}
@@ -55,7 +53,7 @@ func buildSpec(vip, namespace string, selectors, endpoints []string, ports []Por
 		})
 	}
 
-	return spec, selector, nil
+	return spec, nil
 }
 
 func checkVIP(vip string) error {

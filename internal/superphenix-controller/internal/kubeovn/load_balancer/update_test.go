@@ -29,6 +29,7 @@ func TestUpdateLoadBalancer(t *testing.T) {
 			vip:       "198.18.0.11",
 			endpoints: []string{"10.10.0.6"},
 			wantVPC:   vpcA,
+			wantErr:   false,
 		},
 		{
 			name:      "pinned rule keeps its own vip",
@@ -37,6 +38,7 @@ func TestUpdateLoadBalancer(t *testing.T) {
 			vip:       testVIP,
 			endpoints: []string{"10.10.0.6"},
 			wantVPC:   vpcA,
+			wantErr:   false,
 		},
 		{
 			name:      "subnet of a pinned rule can't change",

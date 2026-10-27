@@ -9989,7 +9989,7 @@ const docTemplate = `{
                             }
                         },
                         "subnetEId": {
-                            "description": "Subnet the load balancer attaches to, backends must be in it",
+                            "description": "Subnet the load balancer attaches to, endpoints must be in it",
                             "type": "string"
                         },
                         "vip": {
@@ -10079,7 +10079,7 @@ const docTemplate = `{
                             }
                         },
                         "subnetEId": {
-                            "description": "Subnet the load balancer attaches to, backends must be in it",
+                            "description": "Subnet the load balancer attaches to, endpoints must be in it",
                             "type": "string"
                         },
                         "vip": {

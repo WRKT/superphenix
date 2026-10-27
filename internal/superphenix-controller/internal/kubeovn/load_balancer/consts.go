@@ -1,8 +1,10 @@
 package loadBalancer
 
+import "github.com/super-phenix/superphenix/internal/superphenix-controller/internal/utils"
+
 const (
 	logicalRouterAnnotation = "ovn.kubernetes.io/logical_router"
-	logicalSwitchAnnotation = "ovn.kubernetes.io/logical_switch"
+	logicalSwitchAnnotation = utils.LogicalSwitchAnnotation
 	serviceVPCAnnotation    = "ovn.kubernetes.io/vpc"
 	defaultVPC              = "ovn-cluster"
 	ruleServicePrefix       = "slr-"

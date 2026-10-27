@@ -15,7 +15,7 @@ import (
 type CreateLoadBalancerInfo struct {
 	spxId.Metadata
 	VIP string `json:"vip"`
-	// Subnet the load balancer attaches to, backends must be in it
+	// Subnet the load balancer attaches to, endpoints must be in it
 	SubnetEId string `json:"subnetEId"`
 	// Selectors and Endpoints are mutually exclusives
 	Selectors []string `json:"selectors"`
@@ -26,7 +26,7 @@ type CreateLoadBalancerInfo struct {
 func (info *CreateLoadBalancerInfo) CreateLoadBalancer(ctx context.Context) error {
 	log := logger.GetLogger(ctx)
 
-	spec, selector, err := buildSpec(info.VIP, info.GetProjectID(), info.Selectors, info.Endpoints, info.Ports)
+	spec, err := buildSpec(info.VIP, info.GetProjectID(), info.Selectors, info.Endpoints, info.Ports)
 	if err != nil {
 		log.Err(err).Any("info", info).Msg("Error parsing creation values")
 		return err
@@ -38,8 +38,8 @@ func (info *CreateLoadBalancerInfo) CreateLoadBalancer(ctx context.Context) erro
 		return err
 	}
 
-	if err := checkBackendsInSubnet(subnet, info.GetProjectID(), selector, spec.Endpoints); err != nil {
-		log.Err(err).Any("info", info).Msg("Load balancer backends not in subnet")
+	if err := checkEndpointsInSubnet(subnet, spec.Endpoints); err != nil {
+		log.Err(err).Any("info", info).Msg("Load balancer endpoints not in subnet")
 		return err
 	}
 

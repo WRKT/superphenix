@@ -8,7 +8,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
 func TestBuildSpec(t *testing.T) {
@@ -19,9 +18,9 @@ func TestBuildSpec(t *testing.T) {
 		endpoints []string
 		wantErr   bool
 	}{
-		{name: "valid IPv4 endpoint", vip: testVIP, endpoints: []string{"10.0.0.1"}},
-		{name: "multiple valid IPv4 endpoints", vip: testVIP, endpoints: []string{"10.0.0.1", "192.168.1.2"}},
-		{name: "valid selector", vip: testVIP, selectors: []string{"app:web"}},
+		{name: "valid IPv4 endpoint", vip: testVIP, endpoints: []string{"10.0.0.1"}, wantErr: false},
+		{name: "multiple valid IPv4 endpoints", vip: testVIP, endpoints: []string{"10.0.0.1", "192.168.1.2"}, wantErr: false},
+		{name: "valid selector", vip: testVIP, selectors: []string{"app:web"}, wantErr: false},
 		{name: "invalid selector rejected", vip: testVIP, selectors: []string{"app"}, wantErr: true},
 		{name: "IPv6 endpoint rejected", vip: testVIP, endpoints: []string{"fe80::1"}, wantErr: true},
 		{name: "IPv6 loopback rejected", vip: testVIP, endpoints: []string{"::1"}, wantErr: true},
@@ -34,7 +33,7 @@ func TestBuildSpec(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, _, err := buildSpec(tt.vip, project, tt.selectors, tt.endpoints, nil)
+			_, err := buildSpec(tt.vip, project, tt.selectors, tt.endpoints, nil)
 			if (err != nil) != tt.wantErr {
 				t.Fatalf("buildSpec() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -46,10 +45,6 @@ func TestBuildSpec(t *testing.T) {
 }
 
 func TestCreateLoadBalancer(t *testing.T) {
-	webPod := func(name, namespace string, annotations map[string]string) *unstructured.Unstructured {
-		return podObj(name, namespace, map[string]string{"app": "web"}, annotations)
-	}
-
 	tests := []struct {
 		name      string
 		fixture   fixture
@@ -63,42 +58,11 @@ func TestCreateLoadBalancer(t *testing.T) {
 		{name: "unknown subnet rejected", subnet: "spx-unknown", endpoints: []string{"10.10.0.5"}, wantErr: true},
 		{name: "subnet of another project rejected", subnet: subnetOther, endpoints: []string{"10.30.0.5"}, wantErr: true},
 		{name: "subnet in the default VPC rejected", subnet: subnetCluster, endpoints: []string{"10.40.0.5"}, wantErr: true},
-		{name: "own subnet pins the rule", subnet: subnetA, endpoints: []string{"10.10.0.5"}, wantVPC: vpcA},
-		{name: "shared subnet pins the rule", subnet: subnetShared, endpoints: []string{"10.20.0.5"}, wantVPC: vpcB},
+		{name: "own subnet pins the rule", subnet: subnetA, endpoints: []string{"10.10.0.5"}, wantVPC: vpcA, wantErr: false},
+		{name: "shared subnet pins the rule", subnet: subnetShared, endpoints: []string{"10.20.0.5"}, wantVPC: vpcB, wantErr: false},
 		{name: "endpoint outside the subnet rejected", subnet: subnetA, endpoints: []string{"10.11.0.5"}, wantErr: true},
 		{name: "one endpoint outside the subnet rejected", subnet: subnetA, endpoints: []string{"10.10.0.5", "10.99.0.5"}, wantErr: true},
-		{
-			name:      "selected pod in the subnet accepted",
-			fixture:   fixture{pods: []*unstructured.Unstructured{webPod("web", project, map[string]string{logicalSwitchAnnotation: subnetA})}},
-			subnet:    subnetA,
-			selectors: []string{"app:web"},
-			wantVPC:   vpcA,
-		},
-		{
-			name: "selected pod attached to the subnet accepted",
-			fixture: fixture{pods: []*unstructured.Unstructured{webPod("web", project, map[string]string{
-				logicalSwitchAnnotation:                           "ovn-default",
-				"net1." + project + "." + logicalSwitchAnnotation: subnetA,
-			})}},
-			subnet:    subnetA,
-			selectors: []string{"app:web"},
-			wantVPC:   vpcA,
-		},
-		{
-			name:      "selected pod in another subnet rejected",
-			fixture:   fixture{pods: []*unstructured.Unstructured{webPod("web", project, map[string]string{logicalSwitchAnnotation: subnetA2})}},
-			subnet:    subnetA,
-			selectors: []string{"app:web"},
-			wantErr:   true,
-		},
-		{
-			name:      "pod of another namespace ignored",
-			fixture:   fixture{pods: []*unstructured.Unstructured{webPod("web", otherProject, map[string]string{logicalSwitchAnnotation: subnetOther})}},
-			subnet:    subnetA,
-			selectors: []string{"app:web"},
-			wantVPC:   vpcA,
-		},
-		{name: "selector matching no pod accepted", subnet: subnetA, selectors: []string{"app:web"}, wantVPC: vpcA},
+		{name: "selector accepted", subnet: subnetA, selectors: []string{"app:web"}, wantVPC: vpcA, wantErr: false},
 		{
 			name:      "vip used by a rule of the same VPC rejected",
 			fixture:   fixture{rules: []*v1.SwitchLBRule{ruleObj("other", project, testVIP, pinned(vpcA, subnetA2))}},
@@ -112,6 +76,7 @@ func TestCreateLoadBalancer(t *testing.T) {
 			subnet:    subnetA,
 			endpoints: []string{"10.10.0.5"},
 			wantVPC:   vpcA,
+			wantErr:   false,
 		},
 		{
 			name: "vip used by an unpinned rule resolved in the same VPC rejected",
@@ -132,6 +97,7 @@ func TestCreateLoadBalancer(t *testing.T) {
 			subnet:    subnetA,
 			endpoints: []string{"10.10.0.5"},
 			wantVPC:   vpcA,
+			wantErr:   false,
 		},
 		{
 			name:      "vip used by an unpinned rule of unknown VPC rejected",

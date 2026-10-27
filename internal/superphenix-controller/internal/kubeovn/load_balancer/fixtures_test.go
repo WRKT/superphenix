@@ -71,21 +71,9 @@ func ruleService(rule, namespace, vpc string) *corev1.Service {
 	}}
 }
 
-func podObj(name, namespace string, labels, annotations map[string]string) *unstructured.Unstructured {
-	pod := &unstructured.Unstructured{}
-	pod.SetAPIVersion("v1")
-	pod.SetKind("Pod")
-	pod.SetName(name)
-	pod.SetNamespace(namespace)
-	pod.SetLabels(labels)
-	pod.SetAnnotations(annotations)
-	return pod
-}
-
 type fixture struct {
 	rules    []*v1.SwitchLBRule
 	services []*corev1.Service
-	pods     []*unstructured.Unstructured
 }
 
 // setup seeds the fake clients and informers, and returns the kube-ovn client.
@@ -120,12 +108,6 @@ func setup(t *testing.T, f fixture) *testhelper.FakeKubeOvnClientset {
 		ruleItems = append(ruleItems, &unstructured.Unstructured{Object: obj})
 	}
 	testhelper.SetupFakeWatcher(informers.SwitchLBRules, ruleItems...)
-
-	podItems := make([]any, 0, len(f.pods))
-	for _, p := range f.pods {
-		podItems = append(podItems, p)
-	}
-	testhelper.SetupFakeWatcher(informers.Pods, podItems...)
 
 	k8sClient := k8sfake.NewClientset()
 	for _, s := range f.services {

@@ -507,7 +507,7 @@ type CreateLoadBalancerBody struct {
 	} `json:"general"`
 	Spec struct {
 		VIP string `json:"vip"`
-		// Subnet the load balancer attaches to, backends must be in it
+		// Subnet the load balancer attaches to, endpoints must be in it
 		SubnetEId string `json:"subnetEId" validate:"required"`
 		// Selectors and Endpoints are mutually exclusives
 		Selectors []string   `json:"selectors"`
@@ -522,7 +522,7 @@ type UpdateLoadBalancerBody struct {
 	} `json:"general"`
 	Spec struct {
 		VIP string `json:"vip"`
-		// Subnet the load balancer attaches to, backends must be in it
+		// Subnet the load balancer attaches to, endpoints must be in it
 		SubnetEId string `json:"subnetEId" validate:"required"`
 		// Selectors and Endpoints are mutually exclusives
 		Selectors []string   `json:"selectors"`

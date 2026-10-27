@@ -14,7 +14,7 @@ import (
 
 type UpdateLoadBalancerInfo struct {
 	VIP string `json:"vip"`
-	// Subnet the load balancer attaches to, backends must be in it
+	// Subnet the load balancer attaches to, endpoints must be in it
 	SubnetEId string `json:"subnetEId"`
 	// Selectors and Endpoints are mutually exclusives
 	Selectors []string `json:"selectors"`
@@ -45,7 +45,7 @@ func (info *UpdateLoadBalancerInfo) UpdateLoadBalancer(ctx context.Context, name
 		return apierrors.NewBadRequest(fmt.Sprintf("load balancer %q is not attached to a subnet, delete and recreate it", name))
 	}
 
-	spec, selector, err := buildSpec(info.VIP, namespace, info.Selectors, info.Endpoints, info.Ports)
+	spec, err := buildSpec(info.VIP, namespace, info.Selectors, info.Endpoints, info.Ports)
 	if err != nil {
 		log.Err(err).Any("info", info).Msg("Error parsing update values")
 		return err
@@ -61,8 +61,8 @@ func (info *UpdateLoadBalancerInfo) UpdateLoadBalancer(ctx context.Context, name
 		return apierrors.NewBadRequest(fmt.Sprintf("subnet of load balancer %q can't be changed", name))
 	}
 
-	if err := checkBackendsInSubnet(subnet, namespace, selector, spec.Endpoints); err != nil {
-		log.Err(err).Any("info", info).Msg("Load balancer backends not in subnet")
+	if err := checkEndpointsInSubnet(subnet, spec.Endpoints); err != nil {
+		log.Err(err).Any("info", info).Msg("Load balancer endpoints not in subnet")
 		return err
 	}
 

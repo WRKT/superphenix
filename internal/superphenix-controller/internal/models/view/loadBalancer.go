@@ -21,8 +21,6 @@ type LBView struct {
 	Status LBStatus `json:"status,omitempty"`
 }
 
-const lbSubnetAnnotation = "ovn.kubernetes.io/logical_switch"
-
 type LBSpec struct {
 	Vip             string       `json:"vip"`
 	Namespace       string       `json:"namespace"`
@@ -55,14 +53,14 @@ func UnstructuredLBToView(lb *unstructured.Unstructured) LBView {
 	if err := utils.UnstructuredToStruct(lb, &view); err != nil {
 		return LBView{}
 	}
-	view.SubnetEId = view.Annotations[lbSubnetAnnotation]
+	view.SubnetEId = view.Annotations[utils.LogicalSwitchAnnotation]
 	view.Labels = utils.FilterLabels(view.Labels)
 	view.Annotations = utils.FilterAnnotations(view.Annotations)
 	return view
 }
 
 func LBToView(lb v1.SwitchLBRule) LBView {
-	subnetEId := lb.GetAnnotations()[lbSubnetAnnotation]
+	subnetEId := lb.GetAnnotations()[utils.LogicalSwitchAnnotation]
 	lb.Labels = utils.FilterLabels(lb.GetLabels())
 	lb.Annotations = utils.FilterAnnotations(lb.GetAnnotations())
 
