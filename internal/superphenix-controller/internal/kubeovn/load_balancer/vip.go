@@ -14,12 +14,19 @@ import (
 
 // vipInUse reports whether a rule other than selfName uses vip in vpc, or in an unknown VPC.
 func vipInUse(ctx context.Context, vip, vpc, selfName string) (bool, error) {
-	for _, item := range informers.WatcherSet[informers.SwitchLBRules].List() {
+	// Rules pinned to the VPC, and rules without a pinned VPC
+	var candidates []any
+	for _, key := range []string{informers.SwitchLBRuleVPCVIPKey(vpc, vip), informers.SwitchLBRuleVPCVIPKey(informers.UnpinnedVPC, vip)} {
+		items, err := informers.WatcherSet[informers.SwitchLBRules].ByIndex(informers.SwitchLBRuleVPCVIPIndex, key)
+		if err != nil {
+			return false, err
+		}
+		candidates = append(candidates, items...)
+	}
+
+	for _, item := range candidates {
 		rule, ok := item.(*unstructured.Unstructured)
 		if !ok || rule.GetName() == selfName {
-			continue
-		}
-		if ruleVip, _, _ := unstructured.NestedString(rule.Object, "spec", "vip"); ruleVip != vip {
 			continue
 		}
 
