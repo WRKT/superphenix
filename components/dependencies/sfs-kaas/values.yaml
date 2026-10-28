@@ -249,9 +249,15 @@ clusters: {}
 
   #           # -- GPU Passthrough configuration
   #           # @section -- Worker VM template
-  #           # @default -- {}
+  #           # @default -- []
   #           gpus:
   #             - device: ""
+
+  #           # -- List of NTP server IPs or DNS names
+  #           # Uses systemd-timesyncd which implements SNTP
+  #           # @section -- Worker VM template
+  #           # @default -- []
+  #           ntpServers: []
 
   #           # -- Custom taints to be set on node creation
   #           # @section -- Worker VM template
