@@ -19,6 +19,7 @@ services:
   kratos:
     depends_on:
       - kratos-migrate
+      - mailpit
     image: oryd/kratos:v26.2.0
     ports:
       - "${KRATOS_PUBLIC_PORT:-4433}:4433" # public
@@ -34,6 +35,16 @@ services:
       - type: bind
         source: ./local/kratos
         target: /etc/config/kratos
+    networks:
+      - intranet
+  mailpit:
+    # Catches Kratos emails (verification, recovery codes).
+    image: axllent/mailpit:v1.21
+    ports:
+      - "${MAILPIT_UI_PORT:-8025}:8025"
+    restart: unless-stopped
+    profiles:
+      - backend
     networks:
       - intranet
   postgresd:
@@ -104,6 +115,7 @@ services:
       - SUPERPHENIX-API_LOGGING_PRETTY=true
       - SUPERPHENIX-API_SESSION_COOKIES_SECURE=false
       - SUPERPHENIX-API_SESSION_COOKIES_SAMESITE=Lax
+      - SUPERPHENIX-API_USERSETTINGS_USERISACTIVEONCREATE=${USER_ACTIVE_ON_CREATE:-true}
       - SUPERPHENIX-API_SESSION_CORS_ALLOWEDORIGINS=http://localhost:${SPX_PANEL_PORT:-4200}
       - SUPERPHENIX-API_PERMIFY_URL=permify:3478
       - SUPERPHENIX-API_ADMINHTTP_AUTHSECRET=${SUPERPHENIX_API_ADMIN_SECRET:-local}
