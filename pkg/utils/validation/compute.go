@@ -3,6 +3,7 @@ package validation
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"k8s.io/apimachinery/pkg/api/resource"
 )
@@ -14,6 +15,8 @@ const (
 	MaxComputeValue = 999_999
 
 	mebibyte = 1 << 20
+	// maxMemoryLength bounds the input passed to resource.ParseQuantity.
+	maxMemoryLength = 64
 )
 
 var (
@@ -31,12 +34,19 @@ func ValidateComputeSize(cpu int, memory string) (resource.Quantity, error) {
 			ErrInvalidComputeSize, cpu, MinCPU, MaxComputeValue)
 	}
 
+	invalidMemory := fmt.Errorf("%w: memory (%q) must be a whole number of MiB between %s and %s",
+		ErrInvalidComputeSize, memory, MinMemory.String(), MaxMemory.String())
+
+	// ParseQuantity time grows with the exponent value, so exponents are rejected before parsing.
+	if len(memory) > maxMemoryLength || strings.ContainsAny(memory, "eE") {
+		return resource.Quantity{}, invalidMemory
+	}
+
 	q, err := resource.ParseQuantity(memory)
 	if err != nil ||
 		q.Cmp(MinMemory) < 0 || q.Cmp(MaxMemory) > 0 ||
 		q.CmpInt64(q.Value()) != 0 || q.Value()%mebibyte != 0 {
-		return resource.Quantity{}, fmt.Errorf("%w: memory (%q) must be a whole number of MiB between %s and %s",
-			ErrInvalidComputeSize, memory, MinMemory.String(), MaxMemory.String())
+		return resource.Quantity{}, invalidMemory
 	}
 
 	return *resource.NewQuantity(q.Value(), resource.BinarySI), nil

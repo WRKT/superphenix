@@ -1,6 +1,7 @@
 package validation
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -46,6 +47,11 @@ func TestValidateComputeSize(t *testing.T) {
 		{name: "memory milli not whole bytes", cpu: 2, memory: "4398046511104m", expectError: true},
 		{name: "memory exbibytes", cpu: 2, memory: "8Ei", expectError: true},
 		{name: "memory max int64 bytes", cpu: 2, memory: "9223372036854775807", expectError: true},
+		{name: "memory huge exponent", cpu: 2, memory: "1e9999999", expectError: true},
+		{name: "memory exponent whole mebibytes", cpu: 2, memory: "134217728e0", expectError: true},
+		{name: "memory uppercase exponent", cpu: 2, memory: "1E9", expectError: true},
+		{name: "memory too long", cpu: 2, memory: "1" + strings.Repeat("0", 64) + "Mi", expectError: true},
+		{name: "memory fractional trailing zeros", cpu: 2, memory: "1.5000Gi", want: "1536Mi", expectError: false},
 	}
 
 	for _, tt := range tests {
