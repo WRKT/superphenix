@@ -9414,7 +9414,7 @@ const docTemplate = `{
                             }
                         },
                         "memory": {
-                            "type": "integer"
+                            "type": "string"
                         }
                     }
                 },
@@ -9637,7 +9637,7 @@ const docTemplate = `{
                             }
                         },
                         "memory": {
-                            "type": "integer"
+                            "type": "string"
                         }
                     }
                 },
@@ -9786,7 +9786,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "memory": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "name": {
                     "type": "string",
