@@ -21,6 +21,9 @@ func TestValidateComputeSize(t *testing.T) {
 		{name: "mebibytes not whole gibibytes", cpu: 2, memory: "2500Mi", want: "2500Mi", expectError: false},
 		{name: "mebibytes canonicalised", cpu: 2, memory: "1024Mi", want: "1Gi", expectError: false},
 		{name: "bytes", cpu: 2, memory: "1073741824", want: "1Gi", expectError: false},
+		{name: "memory explicit plus sign", cpu: 2, memory: "+4Gi", want: "4Gi", expectError: false},
+		{name: "memory kibibytes canonicalised", cpu: 2, memory: "4194304Ki", want: "4Gi", expectError: false},
+		{name: "memory milli whole bytes", cpu: 2, memory: "4398046511104000m", want: "4Ti", expectError: false},
 		{name: "cpu zero", cpu: 0, memory: "4Gi", expectError: true},
 		{name: "cpu negative", cpu: -1, memory: "4Gi", expectError: true},
 		{name: "cpu above max", cpu: MaxComputeValue + 1, memory: "4Gi", expectError: true},
@@ -33,6 +36,16 @@ func TestValidateComputeSize(t *testing.T) {
 		{name: "memory decimal unit", cpu: 2, memory: "2G", expectError: true},
 		{name: "memory unparseable", cpu: 2, memory: "abc", expectError: true},
 		{name: "memory empty", cpu: 2, memory: "", expectError: true},
+		{name: "memory lowercase unit", cpu: 2, memory: "4gi", expectError: true},
+		{name: "memory byte suffix", cpu: 2, memory: "4GiB", expectError: true},
+		{name: "memory leading space", cpu: 2, memory: " 4Gi", expectError: true},
+		{name: "memory trailing space", cpu: 2, memory: "4Gi ", expectError: true},
+		{name: "memory hexadecimal", cpu: 2, memory: "0x10", expectError: true},
+		{name: "memory kilo decimal unit", cpu: 2, memory: "4k", expectError: true},
+		{name: "memory exponent not whole mebibytes", cpu: 2, memory: "1e9", expectError: true},
+		{name: "memory milli not whole bytes", cpu: 2, memory: "4398046511104m", expectError: true},
+		{name: "memory exbibytes", cpu: 2, memory: "8Ei", expectError: true},
+		{name: "memory max int64 bytes", cpu: 2, memory: "9223372036854775807", expectError: true},
 	}
 
 	for _, tt := range tests {

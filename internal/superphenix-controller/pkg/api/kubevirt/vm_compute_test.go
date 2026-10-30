@@ -62,6 +62,8 @@ func TestInstanceHandlers_ComputeSizeRejected(t *testing.T) {
 		{name: "create with memory above maximum", cpu: 2, memory: "1000000Gi", want: "memory ("},
 		{name: "update with cpu above maximum", update: true, cpu: 1000000, memory: "4Gi", want: "cpu value"},
 		{name: "update with memory zero", update: true, cpu: 2, memory: "0Gi", want: "memory ("},
+		{name: "create with unparseable memory", cpu: 2, memory: "abc", want: "memory ("},
+		{name: "update with decimal unit memory", update: true, cpu: 2, memory: "2G", want: "memory ("},
 	}
 
 	for _, tt := range tests {

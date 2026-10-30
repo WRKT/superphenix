@@ -795,7 +795,7 @@ func (h *Service) fetchKaaSApp(ctx context.Context, projectId, resourceEId strin
 
 	app.Spec, err = argokaas.ConvertAppToUpdateKaaSSpec(appView)
 	if err != nil {
-		log.Error().Str("effectiveId", resourceEId).Msg("Failed to read app spec")
+		log.Error().Err(err).Str("effectiveId", resourceEId).Msg("Failed to read app spec")
 		return kaasApp{}, true, err
 	}
 

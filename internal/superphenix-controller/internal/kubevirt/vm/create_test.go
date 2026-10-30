@@ -127,6 +127,7 @@ func TestConvertToVM_ComputeSize(t *testing.T) {
 		{name: "cpu zero returns error", cpu: 0, memory: testMemory, errContains: "cpu value"},
 		{name: "memory above maximum returns error", cpu: 2, memory: "1000000Gi", errContains: "memory ("},
 		{name: "memory below minimum returns error", cpu: 2, memory: "127Mi", errContains: "memory ("},
+		{name: "memory unparseable returns error", cpu: 2, memory: "abc", errContains: "memory ("},
 	}
 
 	for _, tt := range tests {

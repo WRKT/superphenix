@@ -16,15 +16,21 @@ import (
 var numericRegex = regexp.MustCompile(`[^\p{N}]+`)
 
 // quantityToGiB returns a quantity in whole GiB, whatever unit it is written in.
-func quantityToGiB(quantity string) int {
-	q := resource.MustParse(quantity)
-	return int(q.Value() >> 30)
+func quantityToGiB(quantity string) (int, error) {
+	q, err := resource.ParseQuantity(quantity)
+	if err != nil {
+		return 0, fmt.Errorf("invalid quantity %q: %w", quantity, err)
+	}
+	return int(q.Value() >> 30), nil
 }
 
 // quantityToBinary returns a quantity in canonical binary form ("1536Mi", "4Gi").
-func quantityToBinary(quantity string) string {
-	q := resource.MustParse(quantity)
-	return resource.NewQuantity(q.Value(), resource.BinarySI).String()
+func quantityToBinary(quantity string) (string, error) {
+	q, err := resource.ParseQuantity(quantity)
+	if err != nil {
+		return "", fmt.Errorf("invalid quantity %q: %w", quantity, err)
+	}
+	return resource.NewQuantity(q.Value(), resource.BinarySI).String(), nil
 }
 
 // ConvertAppToUpdateKaaSSpec convert kaas helm chart values to KaaSSPec used for updating KaaS product
@@ -96,7 +102,11 @@ func ConvertAppToUpdateKaaSSpec(app view.AppView) (KaaSSpec, error) {
 		if cluster.ControlPlane.DataStore != nil {
 			storage := 0
 			if cluster.ControlPlane.DataStore.Storage != "" {
-				storage = quantityToGiB(cluster.ControlPlane.DataStore.Storage)
+				var err error
+				storage, err = quantityToGiB(cluster.ControlPlane.DataStore.Storage)
+				if err != nil {
+					return KaaSSpec{}, fmt.Errorf("datastore storage: %w", err)
+				}
 			}
 			result.ControlPlane = ControlPlaneSpec{DataStore: DataStoreSpec{
 				Dedicated:        cluster.ControlPlane.DataStore.Dedicated,
@@ -118,8 +128,14 @@ func ConvertAppToUpdateKaaSSpec(app view.AppView) (KaaSSpec, error) {
 
 		for _, key := range keys {
 			instance := cluster.Workers.Instances[key]
-			mem := quantityToBinary(instance.Template.Memory)
-			storage := quantityToGiB(instance.Template.BootDisk.Storage)
+			mem, err := quantityToBinary(instance.Template.Memory)
+			if err != nil {
+				return KaaSSpec{}, fmt.Errorf("memory of group '%s': %w", key, err)
+			}
+			storage, err := quantityToGiB(instance.Template.BootDisk.Storage)
+			if err != nil {
+				return KaaSSpec{}, fmt.Errorf("boot disk storage of group '%s': %w", key, err)
+			}
 
 			subnets := make([]GroupSubnet, 0)
 			for i, it := range instance.Template.Interfaces {

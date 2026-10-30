@@ -457,6 +457,19 @@ func TestCreateKaaSAppValues_Comparison(t *testing.T) {
 			wantErr: true,
 		},
 		{
+			name: "Memory unparseable - should return error",
+			spec: KaaSSpec{
+				KubeVersion:   "1.24.0",
+				CPNetPol:      "default",
+				WorkersNetPol: "default",
+				Groups: []Group{
+					{Name: "group-1", Replicas: 1, Cpu: 2, Memory: "abc", BootDiskSize: 20, StorageClass: "sc1", Subnets: []GroupSubnet{{Order: 1, Id: "subnet-1"}}},
+				},
+			},
+			oldSpec: nil,
+			wantErr: true,
+		},
+		{
 			name: "Same memory written differently - should keep the version",
 			spec: KaaSSpec{
 				KubeVersion:   "1.24.0",
