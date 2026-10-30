@@ -15342,7 +15342,7 @@ const docTemplate = `{
                             }
                         },
                         "memory": {
-                            "type": "integer"
+                            "type": "string"
                         }
                     }
                 },
@@ -15511,7 +15511,7 @@ const docTemplate = `{
                             }
                         },
                         "memory": {
-                            "type": "integer"
+                            "type": "string"
                         }
                     }
                 },
