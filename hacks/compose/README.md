@@ -22,8 +22,8 @@ cp .env.example .env
 $EDITOR .env   # set SPX_PANEL_PATH to absolute paths
 
 # 2. Create a local Kratos config (the example is committed, the real file is gitignored)
+mkdir -p local/kratos
 cp kratos/kratos.example.yml local/kratos/kratos.yml
-cp kratos/identity.default.schema.json local/kratos/
 $EDITOR local/kratos/kratos.yml   # set secrets.default (e.g. `openssl rand -base64 32`)
 
 # 3. Bring the stack up (from this directory)
@@ -33,19 +33,13 @@ docker compose up -d
 docker compose -f hacks/compose/docker-compose.yml up -d --build
 ```
 
-## Logging in locally
-
-Login, registration and the other auth pages are served by the SPX panel at
-`http://localhost:4200/auth/...`. Kratos requires a verified email before login:
-after registering, open Mailpit at `http://localhost:8025` to read the verification code.
-
 ## Docker Compose Profiles
 
 Every service in the stack is assigned to a **profile**. Only the profiles you activate will be started.
 
 | Profile     | Services                                                                                    |
 |-------------|---------------------------------------------------------------------------------------------|
-| `backend`   | `kratos-migrate`, `kratos`, `mailpit`, `postgresd`, `superphenix-api-db`, `permify`, `superphenix-api` |
+| `backend`   | `kratos-migrate`, `kratos`, `postgresd`, `superphenix-api-db`, `permify`, `superphenix-api` |
 | `spx-panel` | `spx-panel`                                                                                 |
 
 ### Activating profiles via `COMPOSE_PROFILES`
